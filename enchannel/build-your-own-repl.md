@@ -1,10 +1,15 @@
 # Build your own REPL with Jupyter via enchannel
 
-This will stand as a guide on your journey through learning:
+This guide is here to help you on your journey to working with nteract's node
+packages. The main goal of this guide is to go from scratch to a working interactive
+[REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop) you can
+use at the command line.
 
-* Messaging with Jupyter
+Core topics that will be introduced include:
+
+* Jupyter kernels
+* Messaging with Jupyter (via ZeroMQ)
 * Observables
-* Building a REPL (Read-eval-print-loop) you can use at the command line
 
 <!-- TODO: Provide a clear picture of intent and purpose in the intro -->
 
@@ -12,12 +17,21 @@ This will stand as a guide on your journey through learning:
 
 ## Requirements
 
+First thing you'll need for this tutorial is the IPython kernel for Python3.
+
+```
+python3 -m pip install ipykernel
+python3 -m ipykernel install --user
+```
+
+
 * [Node.js 5+ and npm 3](https://nodejs.org/en/)
 * ZeroMQ
 * Python 2 (for builds - you can still run Python 3)
+* IPython kernels installed
 * `git`
 
-Each operating system has their own instruction set. Please read on down to save yourself time.
+Each operating system has their own instruction set to get node zmq working. Please read on down to save yourself time.
 
 Note: If you're gripping tightly to an older node version, try out
 [nvm](https://github.com/creationix/nvm) or [n](https://github.com/tj/n) for all
