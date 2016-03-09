@@ -126,8 +126,7 @@ Those are the details for connection, essential for us to ask to execute code, g
 * the [Jupyter messaging spec](http://jupyter-client.readthedocs.org/en/latest/messaging.html)
 * [ZeroMQ](http://zguide.zeromq.org/page:all#ZeroMQ-in-a-Hundred-Words)
 
-<!-- Provide diagram -->
-
+<!-- TODO: Provide diagram of how Jupyter frontends and backends are connected -->
 
 ```
 npm install --save node-uuid
