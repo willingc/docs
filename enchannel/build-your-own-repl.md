@@ -272,5 +272,140 @@ If you have other kernels, feel free to swap out the `python3` string for your o
        url: 'https://github.com/n-riesco/ijavascript' } ] }
 ```
 
+### Time to execute code and get results
 
-### Time to get execution working
+We're going to make a little toy on top now that sends some pre-fab code over
+and prints the full response back.
+
+Instead of hand writing the requests out, let's make a little helper function
+
+We're going to create a little helper function for us to create messages that sets up the boilerplate Jupyter message, accepting the session and the message type.
+
+```js
+function createMessage(session, msg_type) {
+  const username = process.env.LOGNAME || process.env.USER ||
+                   process.env.LNAME || process.env.USERNAME;
+  return {
+    header: {
+      username,
+      session,
+      msg_type,
+      msg_id: uuid.v4(),
+      date: new Date(),
+      version: '5.0',
+    },
+    metadata: {},
+    parent_header: {},
+    content: {},
+  };
+}
+```
+
+To use this, let's switch up the message creation with a few lines:
+
+```js
+const create = createMessage.bind(null, session);
+const request = create('kernel_info_request');
+```
+
+Now you can run it again and see the same output as before. Onward to writing
+our first execution request and listening in on it.
+
+We need another channel for us to listen to the response. This time we'll need IOPub. IOPub provides all the messages for side effects from all sending messages to the shell channel. Create it right next to the shell channel:
+
+```js
+const shell = enchannel.createShellSubject(identity, kernel.config);
+const iopub = enchannel.createIOPubSubject(identity, kernel.config);
+```
+
+We now have two channels to cleanup, so let's move more into that `cleanup` function:
+
+```js
+function cleanup(kernel, channels) {
+  channels.forEach(channel => channel.complete());
+  kernel.spawn.kill();
+  fs.unlink(kernel.connectionFile);
+}
+```
+
+This time, we'll cleanup only when the process exits (using a `SIGINT` / `ctrl-c`). We won't be closing the channel during our `kernel_info_request` subscription:
+
+```js
+const request = create('kernel_info_request');
+shell.filter(msg => msg.parent_header.msg_id === request.header.msg_id)
+  .map(msg => msg.content)
+  .first()
+  .subscribe(content => {
+    console.log(content);
+  });
+shell.next(request);
+
+process.on('SIGINT', () => {
+  cleanup(kernel, [shell, iopub]);
+});
+```
+
+Time to make our execution request. First we'll do the setup of creating the
+message and subscribing on our channels.
+
+```js
+const executeRequest = create('execute_request');
+executeRequest.content = {
+  code: 'import random\nrandom.random()',
+  silent: false,
+  store_history: true,
+  user_expressions: {},
+  allow_stdin: true,
+  stop_on_error: false,
+};
+
+iopub.subscribe(msg => console.log('IOPUB', msg));
+shell.subscribe(msg => console.log('SHELL', msg));
+```
+
+The kernel can take some time to boot before you're able to connect up the IOPub
+receiver. Before we do this properly, let's introduce a "sleep" to handle the warmup:
+
+```js
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(), ms);
+  });
+}
+sleep(1000).then(() => {
+  shell.next(executeRequest);
+});
+```
+
+As you run `index.js`, watch what you get in the messages. Deep within the messages you should see one similar to this:
+
+```js
+{
+  header:
+   { date: '2016-03-09T23:35:15.868385',
+     msg_type: 'execute_result',
+     version: '5.0',
+     session: 'e62a4f54-d87c-481d-b27e-dc549cbdac1d',
+     msg_id: 'b9fa8bab-b8e5-4b5f-b4bf-11cd39500ab4',
+     username: 'rgbkrk' },
+  parent_header:
+   { date: '2016-03-10T05:35:14.854000',
+     msg_type: 'execute_request',
+     session: '7e5abbd2-6cf5-421d-8c37-c2b515682f91',
+     version: '5.0',
+     msg_id: '17d7af7a-2dfe-4713-a21d-3a3dac60c2b2',
+     username: 'rgbkrk' },
+  metadata: {},
+  content:
+   { execution_count: 1,
+     metadata: {},
+     data: { 'text/plain': '0.2604591482980253' } } }
+```
+
+Navigating into that Object, check out `msg.content.data`. It's an Object with a `mimetype -> data` mapping.
+
+```js
+{ 'text/plain': '0.2604591482980253' }
+```
+
+That's all we have for now. Please file issues or PRs to expand on this tutorial!
