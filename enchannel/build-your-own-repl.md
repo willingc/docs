@@ -88,14 +88,15 @@ npm install --save enchannel-zmq-backend@1.0.1
 
 If the install failed, try to figure out what went wrong with the zeromq install. Otherwise, join [our slack](http://slack.nteract.in) and we'll see if we can help.
 
-With that out of the way, let's install our other main dependencies for starting
-off:
+## Spawning a runtime
+
+Before we cover the runtimes (called kernels), let's install our other main dependencies:
 
 ```
 npm install --save spawnteract@1.0.2 @reactivex/rxjs@5.0.0-beta.2
 ```
 
-To get you started, write this out to `index.js`, run it with `node index.js` and we'll talk through how it works:
+We'll also go ahead and write some code out for us to talk about right after. Create `index.js` with these contents:
 
 ```js
 const spawnteract = require('spawnteract');
@@ -115,7 +116,20 @@ spawnteract.launch('python3').then(kernel => {
 });
 ```
 
-<!-- TODO: define kernel -->
+The kernel is the runtime environment that allows a user to have an interactive
+session with their language and environment of choice:
+
+```
+In [1]: import random
+
+In [2]: random.random()
+Out[2]: 0.037744852607581425
+
+In [3]:
+```
+
+It functions like a REPL by allowing a user to provide input and get responses back. What's different is that the kernels also provide a rich cross-language protocol
+for sending back data as text, HTML, images, etc. while also providing a means to do things like tab completion.
 
 A kernel always operates in a separate process from the application that launches it. Here, `spawnteract` does the launching for us, spawning the process (`kernel.spawn`) as well as creating a connection file (`kernel.connectionFile` is the file, `kernel.config` are the contents) to allow frontends to connect to it.
 
@@ -139,6 +153,10 @@ Those are the details for connection, essential for us to ask to execute code, g
 
 * the [Jupyter messaging spec](http://jupyter-client.readthedocs.org/en/latest/messaging.html)
 * [ZeroMQ](http://zguide.zeromq.org/page:all#ZeroMQ-in-a-Hundred-Words)
+
+## Talking to the kernel
+
+In order for us
 
 <!-- TODO: Provide diagram of how Jupyter frontends and backends are connected -->
 
@@ -252,3 +270,6 @@ If you have other kernels, feel free to swap out the `python3` string for your o
    [ { text: 'IJavascript Homepage',
        url: 'https://github.com/n-riesco/ijavascript' } ] }
 ```
+
+
+### Time to get execution working
