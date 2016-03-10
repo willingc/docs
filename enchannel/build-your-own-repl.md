@@ -154,16 +154,17 @@ Those are the details for connection, essential for us to ask to execute code, g
 * the [Jupyter messaging spec](http://jupyter-client.readthedocs.org/en/latest/messaging.html)
 * [ZeroMQ](http://zguide.zeromq.org/page:all#ZeroMQ-in-a-Hundred-Words)
 
+<!-- Bring in the kernel sketch ups -->
+
 ## Talking to the kernel
 
-In order for us
-
-<!-- TODO: Provide diagram of how Jupyter frontends and backends are connected -->
+In order for us to talk to the kernel, we'll need to use a ZeroMQ backend. We're also going to need to identify our session and our messages with unique IDs.
 
 ```
 npm install --save node-uuid
 ```
 
+<!-- TODO: Provide diagram of how Jupyter frontends and backends are connected -->
 
 Near the top of `index.js`, we have a few packages to `require`:
 
