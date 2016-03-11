@@ -26,8 +26,7 @@ The following is a rough transcript between two developers, one familiar with Ju
 
 > J: yep
 
-> F: And they come from the ipython kernel
-> F: Not Python itself
+> F: And they come from the ipython kernel, not Python itself
 
 > J: yeah, basically a driver
 
