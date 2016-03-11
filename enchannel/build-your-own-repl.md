@@ -24,24 +24,25 @@ python3 -m pip install ipykernel
 python3 -m ipykernel install --user
 ```
 
+You'll also need:
 
 * [Node.js 5+ and npm 3](https://nodejs.org/en/)
 * ZeroMQ
-* Python 2 (for builds - you can still run Python 3)
+* Python 2 (Python 2 is required for builds - you may still run either Python 2 or Python 3)
 * IPython kernels installed
 * `git`
 
-Each operating system has their own instruction set to get node zmq working. Please read on down to save yourself time.
+Each operating system has its own instruction set to get node zmq working. Please read on down to save yourself time.
 
 Note: If you're gripping tightly to an older node version, try out
 [nvm](https://github.com/creationix/nvm) or [n](https://github.com/tj/n) for all
 your node environment switching needs. As for zmq,
-Once [zmq-prebuilt](https://github.com/nteract/zmq-prebuilt) is ready for
-everyone, you won't have to do these steps
+once [zmq-prebuilt](https://github.com/nteract/zmq-prebuilt) is ready for
+everyone, you won't have to do these steps.
 
 ### OS X
 
-#### homebrew on OS X
+#### Homebrew on OS X
 
 - [`pkg-config`](http://www.freedesktop.org/wiki/Software/pkg-config/): `brew install pkg-config`
 - [ZeroMQ](http://zeromq.org/intro:get-the-software): `brew install zeromq`
@@ -74,10 +75,11 @@ Then we'll make a node package:
 npm init
 ```
 
-Feel free to accept the defaults or mix it up. Go ahead and add your new `package.json` to `git`:
+Feel free to accept the defaults or mix it up. Go ahead and add and commit your new `package.json` to `git`:
 
 ```
 git add package.json
+git commit -m "Add node package"
 ```
 
 Time to install some packages to kick things off.
@@ -131,7 +133,7 @@ In [3]:
 It functions like a REPL by allowing a user to provide input and get responses back. What's different is that the kernels also provide a rich cross-language protocol
 for sending back data as text, HTML, images, etc. while also providing a means to do things like tab completion.
 
-A kernel always operates in a separate process from the application that launches it. Here, `spawnteract` does the launching for us, spawning the process (`kernel.spawn`) as well as creating a connection file (`kernel.connectionFile` is the file, `kernel.config` are the contents) to allow frontends to connect to it.
+A kernel always operates in a separate process from the application that launches it. Here, `spawnteract` does the launching for us, spawning the process (`kernel.spawn`) as well as creating a connection file, `kernel.connectionFile`, which has `kernel.config` as its contents to allow frontends to connect to it.
 
 Go ahead and run `node index.js` and you should get output similar to:
 
@@ -203,7 +205,7 @@ const request = {
 
 This is probably lower level than you would expect to work with at the get-go and we'll do our best to create helper functions along the way. Part of the adventure here is learning the Jupyter protocol and formats. :smile:
 
-The next item we want to setup is a listener for what will be the response to our message:
+The next item we want to setup is a listener for our message response:
 
 ```js
 shell.filter(msg => msg.parent_header.msg_id === request.header.msg_id)
