@@ -95,7 +95,7 @@ If the install failed, try to figure out what went wrong with the zeromq install
 Before we cover the runtimes (called kernels), let's install our other main dependencies:
 
 ```
-npm install --save spawnteract@1.0.2 @reactivex/rxjs@5.0.0-beta.2
+npm install --save spawnteract@2.0.0 @reactivex/rxjs@5.0.0-beta.2
 ```
 
 We'll also go ahead and write some code out for us to talk about right after. Create `index.js` with these contents:
