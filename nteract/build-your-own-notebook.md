@@ -452,6 +452,39 @@ index based approach used by the
 abstraction is magnified by the use of immutable data structures.
 
 ### Overview of nteract technologies
+
+*/begin{Elevator pitch}*  
+The nteract organization was started as an organization for the open
+exploration of interactive computing application specs, tech, and designs.
+The purpose is to encourage a collaborative environment where not one tech,
+spec, design, or notebook rules them all.  Instead, natural selection will
+determine which will survive.  
+*/end{Elevator pitch}*
+
+That said, this tutorial will focus on the technologies used inside the
+[nteract notebook](https://github.com/nteract/nteract).  Ironically, the
+purpose of this tutorial is to acclimate the reader to the internals of the
+nteract notebook thus encouraging upstream contributions instead of duplicate
+efforts via writing a notebook from scratch.  Most of the nteract tech is well
+spec'ed and implemented in small consumable packages which can be thought of as
+example implementations.
+
+The following diagram shows what roles different nteract packages play in the
+design of a notebook application.
+
+![nteract packages](4-nteract.png)
+
+The application we are designing in this tutorial will be simplified by using
+enchannel-zmq-backend to communicate directly to a Jupyter kernel.  We'll also
+make the assumption that the kernel exists on the same physical machine as the
+notebook application.  This allows us to call spawnteract directly to launch
+kernels.  Commutable will be used for notebook model manipulations.  Redux will
+be used to store the state of the application and React will be used to render
+it.  The application state will be immutable so React can make shallow
+comparisons while diffing, which improves the performance.  The
+react-jupyter-output-area component will be used to render outputs from the
+Jupyter kernel.
+
 ### Create a state store (redux)
 ### Load a notebook (commutable)
 ### Design notebook components (react, react-transformime)
