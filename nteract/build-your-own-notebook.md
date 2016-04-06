@@ -391,16 +391,65 @@ git add -A
 git commit -m "Skeleton"
 ```
 
-### Understand the notebook model
+### Understand the application and notebook models
 
-**TODO: Rewrite this bit**
-The first step in designing a notebook application is to design a notebook
-model.  To simplify the tutorial, our notebook model will be a linear array of
-"cells", where each cell can either be a code cell or text cell.  This is the
-same model that [nteract](https://github.com/nteract/nteract) uses, so you will
-be able reuse nteract's document manipulation library,
-[commutable](https://github.com/nteract/commutable).  Don't worry about the
-details yet, you'll learn about the libraries later in the tutorial.
+To simplify the design of this application, the entire application state will
+be cleanly separated from the rendering process by the use of MVC.  Specifically
+a unidirectional data flow form of MVC will be used, called
+[Flux](https://facebook.github.io/flux/docs/overview.html).  The resulting
+application will more flexible in both feature and networking scalability.
+Don't worry if you're unfamiliar with flux, we'll learn as we go.  However, if
+you really want to grok flux, I suggest dedicating a few days to complete the
+[Full-Stack Redux Tutorial by @teropa](http://teropa.info/blog/2015/09/10/full-stack-redux-tutorial.html).
+
+On the surface, a notebook model is a linear array of "cells", where each cell
+can either be a code cell or text cell.  This model works very well on disk,
+where the text in the notebook file appears like it does in the application.
+However, in memory, this model does not work as well.  It makes cell operations
+more difficult.  Cells need to be addressed by index, therefor moving a cell
+changes the address of the cell.  It's also easy to get in situations where the
+cell indicies shift by one, and off by one errors are easy to come by.
+
+The solution is to transform the disk model of a notebook, where each cell is
+addressed by index, to a different in memory model where each cell has a GUID.
+An array is used to specify the order of the cells by GUID.
+
+```
+cellOrder: [
+  "a82j",
+  "zpk2",
+],
+cellMap: {
+  a82j: { ... },
+  zpk2: { ... },
+},
+```
+
+Cell operations are greatly simplified by this model.  For example, moving a
+cell just involves moving it in the cellOrder array.
+
+```diff
+cellOrder: [
++  "zpk2",
+  "a82j",
+-  "zpk2",
+],
+cellMap: {
+  a82j: { ... },
+  zpk2: { ... },
+},
+```
+
+Using this model, cell `zpk2` retains the same name as before the move
+operation.  This becomes invaluable when dealing with multiple asynchronous
+operations on the document at any time.
+
+The model described here is the same model used by the
+[nteract notebook](https://github.com/nteract/nteract).  It contrasts with the
+index based approach used by the
+[Jupyter Notebook](https://github.com/jupyter/notebook) and
+[Jupyter Lab](https://github.com/jupyter/notebook).  The need for this good
+abstraction is magnified by the use of immutable data structures.
 
 ### Overview of nteract technologies
 ### Create a state store (redux)
