@@ -453,13 +453,9 @@ abstraction is magnified by the use of immutable data structures.
 
 ### Overview of nteract technologies
 
-*/begin{Elevator pitch}*  
 The nteract organization was started as an organization for the open
 exploration of interactive computing application specs, tech, and designs.
-The purpose is to encourage a collaborative environment where not one tech,
-spec, design, or notebook rules them all.  Instead, natural selection will
-determine which will survive.  
-*/end{Elevator pitch}*
+nteract is all about learning together and from each other.
 
 That said, this tutorial will focus on the technologies used inside the
 [nteract notebook](https://github.com/nteract/nteract).  Ironically, the
@@ -486,6 +482,10 @@ react-jupyter-output-area component will be used to render outputs from the
 Jupyter kernel.
 
 ### Create a state store (redux)
+
+TODO: Install redux
+TODO: Create store.js file
+
 ### Load a notebook (commutable)
 ### Design notebook components (react, react-transformime)
 ### Launch a kernel (spawnteract)
