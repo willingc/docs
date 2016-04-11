@@ -549,11 +549,47 @@ const store = createStore(reducers);
 ```
 
 ### Load a notebook (commutable)
+
+Create a reducer to set the notebook state.
+Install commutable
+Allow notebooks to be opened via argv
+Load the json and pass it to the dispatch via an action
+
 ### Design notebook components (react, react-transformime)
+
+Install react
+Create a root react node
+Create a notebook node
+Attach the store to the notebook node
+Render some test content
+create a cell node
+create a text cell node
+create a code cell node
+install react jupyter output already
+render output of code cell node
+
 ### Launch a kernel (spawnteract)
+
+install spawnteract
+read the notebook state for kernel information
+launch the kernel for the notebooks
+
 ### Execute code and display results (enchannel)
+
+create an execution reduction
+on shift-enter, execute the code in the cell
+
 ### Save the notebook (commutable)
+
+add a menu command for ctrl-s
+on ctrl-s, dispatch a save action
+save action call commutable, then write to disk
+
 ### Conclusion
+
+recap
+talk about possible improvements
+call for action - contribute to nteract
 
 ### Appendix A <a name="appendixA"></a>
 - [nteract](https://github.com/nteract/nteract)
