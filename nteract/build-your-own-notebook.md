@@ -76,7 +76,7 @@ of Chrome that allows you to build desktop applications using web technologies.
 First electron must be installed
 
 ```bash
-npm i electron-prebuilt@^0.36.2 --save
+npm install electron-prebuilt@^0.36.2 --save
 ```
 
 "Wait, this command looks cryptic!  What's going on here?"
@@ -100,14 +100,14 @@ Because modern web technology is awesome, we'll opt in to using Javascript ES6
 instead of ES5.  To do so, install electron-compile
 
 ```bash
-npm i electron-compile@^2.0.4 --save
+npm install electron-compile@^2.0.4 --save
 ```
 
 And then install the required electron-compilers package as a dev dependency,
 which means it will only be installed with development installs
 
 ```bash
-npm i electron-compilers@^2.0.4 --save-dev
+npm install electron-compilers@^2.0.4 --save-dev
 ```
 
 Electron compile will automatically
@@ -122,7 +122,7 @@ We will use [Babel](https://babeljs.io/) to perform the translation.  Babel is
 composed of many smaller packages.  Here we will install a subset of those packages:
 
 ```bash
-npm i babel-core@^6.7.4 babel-plugin-transform-class-properties@^6.6.0 babel-plugin-transform-object-rest-spread@^6.6.5 babel-preset-es2015@^6.6.0 babel-preset-react@^6.5.0 --save-dev
+npm install babel-core@^6.7.4 babel-plugin-transform-class-properties@^6.6.0 babel-plugin-transform-object-rest-spread@^6.6.5 babel-preset-es2015@^6.6.0 babel-preset-react@^6.5.0 --save-dev
 ```
 
 Lastly we need to configure babel using a `.babelrc` file.
@@ -471,7 +471,7 @@ design of a notebook application.
 ![nteract packages](4-nteract.png)
 
 The application we are designing in this tutorial will be simplified by using
-enchannel-zmq-backend to communicate directly to a Jupyter kernel.  We'll also
+enchannel-zmq-backend to communicate directly to a Jupyter kernel (as seen below).  We'll also
 make the assumption that the kernel exists on the same physical machine as the
 notebook application.  This allows us to call spawnteract directly to launch
 kernels.  Commutable will be used for notebook model manipulations.  Redux will
@@ -481,10 +481,72 @@ comparisons while diffing, which improves the performance.  The
 react-jupyter-output-area component will be used to render outputs from the
 Jupyter kernel.
 
+![tutorial packages](5-notebook.png)
+
 ### Create a state store (redux)
 
-TODO: Install redux
-TODO: Create store.js file
+The first functional piece of the notebook application is the state store.  
+The state store will store the entire runtime state of the application.  Storing
+the entire runtime state of the application as immutable state makes undo/redo,
+real time collaboration, and debugging much easier.  We will use
+[Redux](http://redux.js.org/) to create a state store for the application and
+[Immutable.js](https://facebook.github.io/immutable-js/) for immutable data
+types.
+
+Install immutable and redux using npm
+
+```bash
+npm install immutable@^3.7.6 redux@^3.4.0 --save
+```
+
+The state for the notebook will be stored in the renderer process.  This will
+be very helpful later if you decide to add the ability to open up multiple
+documents at once.  Create a state store in the index of the renderer using the
+createStore redux function.
+
+```js
+console.info('renderer index loaded');
+
+import { createStore } from 'redux';
+const store = createStore(/* TODO: reducers */);
+```
+
+The Redux store manages all changes to the application state.  Changes are
+invoked via "dispatched" actions.  An action is an object with a unique name and
+set of parameters.  The unique name is used to identify the appropriate state
+reduction which is then applied to the state.
+
+We'll need to create a reducers function so the store can perform reductions on
+the state.  Create a `src/renderers/reducers.js` file
+
+```bash
+touch src/renderer/reducers.js
+```
+
+Inside the file, export a reducers function
+
+```js
+export default function reducers(state = 0, action) {
+  switch (action.type) {
+    // TODO: Add actions
+  case 'TEST-ACTION':
+    return state;
+  default:
+    return state;
+  }
+}
+```
+
+Change the `src/renderers/index.js` file so the `createStore` function has a
+handle on the reducer function
+
+```js
+console.info('renderer index loaded');
+
+import { createStore } from 'redux';
+import reducers from './reducers';
+const store = createStore(reducers);
+```
 
 ### Load a notebook (commutable)
 ### Design notebook components (react, react-transformime)
