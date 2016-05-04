@@ -77,5 +77,9 @@ interactive computing, application specs, tech, and designs.
 
 > Jon: ooo I like that
 
+> Kyle: :heart:
+
 > Carol: Thought you might. Really it's just what you had, flipped from passive
-> voice to active. :simple_smile:
+> voice to active. :simple_smile: I gift the words to you. Use them for good.
+
+> Kyle: Love that sentiment.
