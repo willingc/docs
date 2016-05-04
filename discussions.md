@@ -65,3 +65,17 @@ _Tim has nothing :disappointed:_
 > Jon: quick iteration and closeness to data
 
 > Kyle: very good, all of that @betatim and @jdfreder (edited)
+
+> Carol:
+
+```
+As contributors, we value exploration, creativity, respectful collaboration,
+and a welcoming work environment. We formed the nteract organization to further
+these values. We, the nteract team, encourage you to contribute as we explore
+interactive computing, application specs, tech, and designs.
+```
+
+> Jon: ooo I like that
+
+> Carol: Thought you might. Really it's just what you had, flipped from passive
+> voice to active. :simple_smile:
