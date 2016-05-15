@@ -163,7 +163,7 @@ Those are the details for connection, essential for us to ask to execute code, g
 In order for us to talk to the kernel, we'll need to use a ZeroMQ backend. We're also going to need to identify our session and our messages with unique IDs.
 
 ```
-npm install --save node-uuid
+npm install --save uuid
 ```
 
 <!-- TODO: Provide diagram of how Jupyter frontends and backends are connected -->
@@ -171,7 +171,7 @@ npm install --save node-uuid
 Near the top of `index.js`, we have a few packages to `require`:
 
 ```
-const uuid = require('node-uuid');
+const uuid = require('uuid');
 const enchannel = require('enchannel-zmq-backend');
 ```
 
