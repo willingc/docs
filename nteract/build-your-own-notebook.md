@@ -550,12 +550,31 @@ const store = createStore(reducers);
 
 ### Load a notebook (commutable)
 
+Now that we have created a simple state store, let's start with the most important of notebook front-end functions — the ability to open a notebook.
+
+Let's start by adding a menu to our application. Navigate to the main application file located at `src/main/index.js` and add the following import.
+
+```
+import { Menu } from 'electron';
+```
+
+`Menu` is an Electron 
+
+Now let's go ahead and install commutable. This nteract library will allow us to execute some basic operations on notebooks, such as appending cells and updating outputs. To learn more about `commutable`, you can read [its documentation](../commutable/index.md).
+
 Create a reducer to set the notebook state.
 Install commutable
 Allow notebooks to be opened via argv
 Load the json and pass it to the dispatch via an action
 
 ### Design notebook components (react, react-transformime)
+
+Now that we have created a way to load a notebook, we will need to figure out a way to render notebooks. React comes to save the day!
+
+React is a JavaScript library for building
+
+To get started with React, we'll need to create a DOM
+element on our webpage 
 
 Install react
 Create a root react node
