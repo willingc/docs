@@ -110,12 +110,12 @@ which means it will only be installed with development installs
 npm install electron-compilers@^2.0.4 --save-dev
 ```
 
-Electron compile will automatically
+`electron-compile` will automatically
 [transpile](https://www.google.com/webhp?sourceid=chrome-instant&ion=1&espv=2&ie=UTF-8#q=define%3A%20transpile)
 the ES6 Javascript we use into
 ES5 Javascript.
 
-Electron-compile only gets us a part of the way there.  It's the mechanism
+`electron-compile` only gets us a part of the way there.  It's the mechanism
 that triggers the transpilation, but it's not actually smart enought to do the
 translation itself.  Instead it relies on other packages, like Babel, to do that.
 We will use [Babel](https://babeljs.io/) to perform the translation.  Babel is
@@ -146,7 +146,7 @@ Edit the babelrc (`atom .babelrc`) so it looks like this
 }
 ```
 
-This babelrc file tells babel to translate
+This `.babelrc` file tells Babel to translate
 [es2015](https://babeljs.io/docs/plugins/preset-es2015/)
 and [react](https://babeljs.io/docs/plugins/preset-react/)
 code into es5 code.  es2015 is ES6, ratified into Javascript in 2015.  To learn
@@ -156,7 +156,7 @@ about it [here](http://babeljs.io/docs/plugins/transform-object-rest-spread/).
 The class properties plugin is a stage 1 (proposal) spec of Javascript, read
 more about it [here](http://babeljs.io/docs/plugins/transform-class-properties/).
 
-A typical electron application has two or more processes at any given time.
+A typical Electron application has two or more processes at any given time.
 One of these processes is the "main" process, which is responsible for spawning
 windows.  The other processes are "renderer" processes, which are responsible
 for rendering content inside each window.  There is one renderer process per
@@ -560,6 +560,18 @@ import { Menu } from 'electron';
 
 `Menu` is an Electron object that renders a map data structure with specifications about the menu into a menu element. Let's create a new file where we will store our menu.
 
+Inside `app.on('ready')`, we are going to use the `setApplicationMenu` function provided by `Menu`.
+
+```
+app.on('ready', () => {
+	Menu.setApplicationMenu(defaultMenu);
+	
+	....
+});
+```
+
+Where does `defaultMenu` come from? We'll be building it! Let's start by creating a file to store our menu.
+
 ```
 touch src/main/menu.js
 ```
@@ -567,18 +579,31 @@ touch src/main/menu.js
 Inside this file, we'll export a data structure that represents the file menu.
 
 ```
+import { Menu } from 'electron';
+
 export const file = {
   label: '&File',
   submenu: [
     {
-      open: '&Open',
+      label: '&Open',
       accelerator: 'CmdOrCtrl+O',
     }
   ]
 };
+
+export const defaultMenu = Menu.buildFromTemplate([file]);
 ```
 
 This creates a "File" menu with an "Open" subitem that can be tirgged by the Cmd + O or Ctrl + O keyboard shortcuts.
+
+Now, we'll need to instantiate this menu when we launch our application, so edit `src/main/index.js` to import the `defaultMenu` that we just created.
+
+```
+import { defaultMenu } from './menu';
+
+```
+
+Now, run `npm run start` and you should see a blank application window with a `File` menu item.
 
 Now let's go ahead and install commutable. This nteract library will allow us to execute some basic operations on notebooks, such as appending cells and updating outputs. To learn more about `commutable`, you can read [its documentation](../commutable/index.md).
 
@@ -680,13 +705,70 @@ What's next? We've loaded the JSON from a file selected by user into a notebook 
 
 Now that we have created a way to load a notebook, we will need to figure out a way to render notebooks. React comes to save the day!
 
-React is a JavaScript library for building
+React is a JavaScript library for building user interfaces. Let's start off by installing React.
 
-To get started with React, we'll need to create a DOM
-element on our webpage 
+```
+npm install react
+```
 
-Install react
-Create a root react node
+To get started with React, we'll need to create a DOM element on our webpage where we will load our React components. To do this, we will need to create an HTML file like so.
+
+```
+touch static/index.html
+```
+
+And add the following content.
+
+```
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+	</head>
+	<body>
+		<div id="app">
+		</div>
+	</body>
+</html>
+```
+
+The `#div` element is where all our React components will be loaded.
+
+Let's create a Notebook component, a user interface entity that is responsible for rendering the state of the notebook and responding to actions, such as clicks, the user takes in the application. Let's create a new directory, where we will store our components,
+
+```
+mkdir -p src/notebook/components
+```
+
+and add a file for our notebook component.
+
+```
+touch src/notebook/components/notebook.js
+```
+
+And add the following content.
+
+```
+import React from 'react';
+
+class Notebook extends React.Component {
+	static propTypes = {
+		notebook: React.PropTypes.any,
+	};
+	
+	render () {
+		if (!this.props.notebook) {
+			return (<div>
+				<h1>No notebook loaded!</h1>
+			</div>);
+		}
+	}
+}
+
+export default Notebook;
+```
+
+
 Create a notebook node
 Attach the store to the notebook node
 Render some test content
