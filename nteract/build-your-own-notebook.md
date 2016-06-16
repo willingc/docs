@@ -558,14 +558,123 @@ Let's start by adding a menu to our application. Navigate to the main applicatio
 import { Menu } from 'electron';
 ```
 
-`Menu` is an Electron 
+`Menu` is an Electron object that renders a map data structure with specifications about the menu into a menu element. Let's create a new file where we will store our menu.
+
+```
+touch src/main/menu.js
+```
+
+Inside this file, we'll export a data structure that represents the file menu.
+
+```
+export const file = {
+  label: '&File',
+  submenu: [
+    {
+      open: '&Open',
+      accelerator: 'CmdOrCtrl+O',
+    }
+  ]
+};
+```
+
+This creates a "File" menu with an "Open" subitem that can be tirgged by the Cmd + O or Ctrl + O keyboard shortcuts.
 
 Now let's go ahead and install commutable. This nteract library will allow us to execute some basic operations on notebooks, such as appending cells and updating outputs. To learn more about `commutable`, you can read [its documentation](../commutable/index.md).
 
-Create a reducer to set the notebook state.
-Install commutable
-Allow notebooks to be opened via argv
-Load the json and pass it to the dispatch via an action
+At this point, we are going to take a step back and outline what it means to "open" a notebook. The steps look something like this.
+
+1. User selects the notebook they would like to open in an Open window.
+2. The JSON of the file the user selects is loaded.
+3. The JSON from Step 2 is loaded into a notebook file.
+
+Alright! Let's tackle Step 1. We'll need to load a file selector when the user selects File > Open. To do this, we are going to edit `src/main/menu/js` and attach a handler to the `click` event on the `File > Open` window.
+
+```
+import { dialog } from 'electron';
+
+export const file = {
+	label: '&File',
+	submenu: [{
+    	open: '&Open',
+    	accelerator: 'CmdOrCtrl+O',
+    	click: () => {
+    		const opts = {
+    			title: 'Open a notebook',
+    			filters: [
+    				{ name: 'Notebooks', extensions: ['ipynb'] },
+    			],
+    			properties: [
+    				'openFile',
+    			],
+    			defaultPath: process.cwd(),
+    		};
+    		dialog.showOpenDialog(opts, (fname) => {
+    			if (fname) {
+    				// How do we open the file?
+    			}
+    		});
+    	},
+    }] 
+};
+```
+
+Let's break down the code that we have added here. We are taking advantage of one of Electron's awesome utilities, the `dialog` module. The dialog module exposes an `showOpenDialog` function that takes care of showing the user an open dialog and limiting the types of files that they can open. In this particular case, we are limiting the user to opening only `.ipynb` files.
+
+Once the user has selected a file, what do we do? We move on to Steps 2 and 3 of the list above. We will need a way to load the JSON from a file. To do this, let's create a new file
+
+```
+touch src/main/launch.js
+```
+
+And inside this file, we'll create a `launchFilename` function that loads a notebook from a file. Let's start by checking if a `filename` was passed and if not, we'll log a warning to
+the console.
+
+```
+export function launchFilename(filename) {
+	if (!filename) {
+		console.warn('No filename passed!');
+	}
+}
+```
+
+If we do have a `filename` provided, we will need to read from the file. We'll be loading the file asychronously, so we will need to use a `Promise`.
+
+```
+return new Promise((resolve, reject) => {
+	fs.readFile(filename, {}, (err, data) => {
+		if (err) {
+			reject(err);
+		}
+		resolve();
+	});
+});
+```
+
+Make sure that you add an import for the Node filesystem package at the top.
+
+```
+import fs from 'fs';
+```
+
+Now, what should go inside the `resolve` statement if the data is successfully read from the file? Well, for starters, we will need to parse the JSON.
+
+```
+resolve(JSON.parse(data));
+```
+
+Next, we'll need to conver this JSON into the notebook format. `commutable` comes with a `fromJS` function that converts a JSON object to a notebook model. Let's import the function from `commutable` and updated our `resolve` statement.
+
+```
+import { fromJS } from 'commutable';
+
+...
+
+resolve(fromJS(JSON.parse(data)));
+```
+
+What's next? We've loaded the JSON from a file selected by user into a notebook model. We'll need to load a representation of this notebook into the window. Read on, intrepid coder!
+
 
 ### Design notebook components (react, react-transformime)
 
