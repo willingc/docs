@@ -732,7 +732,7 @@ Now that we have created a way to load a notebook, we will need to figure out a 
 React is a JavaScript library for building user interfaces. Let's start off by installing React.
 
 ```
-npm install react
+npm install react --save
 ```
 
 To get started with React, we'll need to create a DOM element on our webpage where we will load our React components, by adding the following content to `src/renderer/index.html`.
@@ -755,13 +755,13 @@ The `#div` element is where all our React components will be loaded.
 Let's create a Notebook component, a user interface entity that is responsible for rendering the state of the notebook and responding to actions, such as clicks, the user takes in the application. Let's create a new directory, where we will store our components,
 
 ```
-mkdir -p src/notebook/components
+mkdir -p src/renderer/components
 ```
 
 and add a file for our notebook component.
 
 ```
-touch src/notebook/components/notebook.js
+touch src/renderer/components/notebook.js
 ```
 
 And add the following content.
@@ -784,6 +784,13 @@ class Notebook extends React.Component {
 }
 
 export default Notebook;
+```
+
+Now that we have our component, we will need to render it inside the `#div` element that we created. To do this, we will need to use the `react-dom` package which will allow us to render a component at a DOM-endpoint.
+
+
+```
+npm install react-dom --save
 ```
 
 
