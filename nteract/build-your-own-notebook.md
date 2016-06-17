@@ -581,6 +581,14 @@ Inside this file, we'll export a data structure that represents the file menu.
 ```
 import { Menu } from 'electron';
 
+export const named = {
+	label: 'mynotebook',
+	submenu: [{
+      label: `About ${name}`,
+      role: 'about',
+    }],
+};
+
 export const file = {
   label: '&File',
   submenu: [
@@ -591,10 +599,22 @@ export const file = {
   ]
 };
 
-export const defaultMenu = Menu.buildFromTemplate([file]);
+export function generateDefaultTemplate() {
+	const template = [];
+	
+	if (process.platform === 'darwin') {
+		template.push(named);
+	}
+	
+	template.push(file);
+	
+	return template;
+}
+
+export const defaultMenu = Menu.buildFromTemplate(generateDefaultTemplate());
 ```
 
-This creates a "File" menu with an "Open" subitem that can be tirgged by the Cmd + O or Ctrl + O keyboard shortcuts.
+This creates a "File" menu with an "Open" subitem that can be tirgged by the Cmd + O or Ctrl + O keyboard shortcuts. All that funny business about `process.platform === 'darwin'` is designed to accomodate the menu structure in macOS which includes the application name.
 
 Now, we'll need to instantiate this menu when we launch our application, so edit `src/main/index.js` to import the `defaultMenu` that we just created.
 
@@ -616,7 +636,9 @@ At this point, we are going to take a step back and outline what it means to "op
 Alright! Let's tackle Step 1. We'll need to load a file selector when the user selects File > Open. To do this, we are going to edit `src/main/menu/js` and attach a handler to the `click` event on the `File > Open` window.
 
 ```
-import { dialog } from 'electron';
+import { Menu, dialog } from 'electron';
+
+...
 
 export const file = {
 	label: '&File',
@@ -645,6 +667,8 @@ export const file = {
 ```
 
 Let's break down the code that we have added here. We are taking advantage of one of Electron's awesome utilities, the `dialog` module. The dialog module exposes an `showOpenDialog` function that takes care of showing the user an open dialog and limiting the types of files that they can open. In this particular case, we are limiting the user to opening only `.ipynb` files.
+
+If we run our application again, you should be able to click `File > Open` and select a notebook from the `Open Dialog`.
 
 Once the user has selected a file, what do we do? We move on to Steps 2 and 3 of the list above. We will need a way to load the JSON from a file. To do this, let's create a new file
 
@@ -711,13 +735,7 @@ React is a JavaScript library for building user interfaces. Let's start off by i
 npm install react
 ```
 
-To get started with React, we'll need to create a DOM element on our webpage where we will load our React components. To do this, we will need to create an HTML file like so.
-
-```
-touch static/index.html
-```
-
-And add the following content.
+To get started with React, we'll need to create a DOM element on our webpage where we will load our React components, by adding the following content to `src/renderer/index.html`.
 
 ```
 <!DOCTYPE html>
