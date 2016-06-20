@@ -722,6 +722,26 @@ import { fromJS } from 'commutable';
 resolve(fromJS(JSON.parse(data)));
 ```
 
+Now, let's hop on back to our `src/main/menu.js` file and make sure that when a user successfully selects a file from the open dialog, the `launchFilename` function is called. We will do this by adding an import to our `launchFilename` function at the top of `src/main/menu.js`
+
+```
+import { launchFilename } from './launch';
+```
+
+and launch the file inside our if-statement.
+
+```
+...
+
+if (fname) {
+  launchFilename(fname[0]);
+}
+
+...
+```
+
+Since the open dialog allows a user to select and load multiple files, the `fname` variable holds a list. However, we are limiting the user to only one file and therefore need to select the first, or 0th index, in the list using the `[0]` accessor.
+
 What's next? We've loaded the JSON from a file selected by user into a notebook model. We'll need to load a representation of this notebook into the window. Read on, intrepid coder!
 
 
