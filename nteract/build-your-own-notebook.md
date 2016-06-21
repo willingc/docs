@@ -742,14 +742,52 @@ if (fname) {
 
 Since the open dialog allows a user to select and load multiple files, the `fname` variable holds a list. However, we are limiting the user to only one file and therefore need to select the first, or 0th index, in the list using the `[0]` accessor.
 
+Now that we have created a way to load a notebook, we will need to figure out a way to render notebooks.
+
+We will need to create a `launch` function that takes a Notebook object and a filename and opens a new Electron window with the document loaded. We will add this function to our `src/main/launch.js`.
+
+```
+import path from 'path';
+import { shell, BrowserWindow } from 'electron';
+
+
+export function launch(notebook, filename) {
+	let win = new BrowserWindow({
+		width: 800,
+		height: 1000,
+		title: filename,
+	});
+	
+	const index = path.join(__dirname, '..', 'renderer', 'index.html');
+	win.loadURL(`file://${index}`);
+	
+	win.webContents.on('did-finish-load', () => {
+		win.webContents.send('main:load', { notebook: notebook.toJS(), filename });
+	});
+	
+	win.on('closed', () => {
+		win = null;
+	});
+	
+	return win;
+}
+```
+
+So, first we create a new `BrowserWindow` and then load the content of our `index.html` file into the `BrowserWindow`.  The next couple of lines utilize [interprocess communication](https://en.wikipedia.org/wiki/Inter-process_communication), or IPC, to send messages between the main process which is responsible for opening web pages and the renderer process which is responsible for the content on each individual webpage. You can read more about the distinction between the main and renderer process on [Electron's official documentation](https://github.com/electron/electron/blob/master/docs/tutorial/quick-start.md).
+
+In this particular case, we wait to recieve a `did-finish-load` and then send a `main:load` function with a payload of the notebook JSON and filename. This `main:load` function will be recieved by our renderer and used to load the actual content.
+
+
+When we recieve the `closed` signal, we sent the value of `win` to `null` which effectively removes the window from the screen.
+
+If we run `npm run start` again, we can use File > Open to select a Notebook file and see that a new window is loaded with a title bar that contains the name of the file.
+
 What's next? We've loaded the JSON from a file selected by user into a notebook model. We'll need to load a representation of this notebook into the window. Read on, intrepid coder!
 
 
 ### Design notebook components (react, react-transformime)
 
-Now that we have created a way to load a notebook, we will need to figure out a way to render notebooks. React comes to save the day!
-
-React is a JavaScript library for building user interfaces. Let's start off by installing React.
+React comes to save the day! React is a JavaScript library for building user interfaces. Let's start off by installing React.
 
 ```
 npm install react --save
