@@ -1,6 +1,6 @@
 # commutable
 
-commutable is an nteract library that allows you to interact with a Jupyter Notebook file. Using commutable, you can create a Notebook document, append cells, update outputs, clear outputs, update the content of a cell and much more. commutable is written in [TypeScript]() so type-checking is enforced on all methods. Let's get stated with commutable. We'll be working in the shell and the Node REPL so make sure that you have those handy.
+commutable is an nteract library that allows you to interact with a Jupyter Notebook file. Using commutable, you can create a Notebook document, append cells, update outputs, clear outputs, update the content of a cell and much more. commutable is written in [TypeScript]() so type-checking is enforced on all methods. Let's get started with commutable. We'll be working in the shell and the Node REPL so make sure that you have those handy.
 
 Let's start off by installing commutable. commutable is an npm package so we can install it by using
 
@@ -106,7 +106,7 @@ Map {
 
 Nice! Now let's say that we've used enchannel to send a message to a Python kernel and receive an output for running `print("a")` on the Python REPL. How can we update the output of the code cell?
 
-The outputs of a cell are represented as Immutable Lists to accommodate . So we'll need to install `immutable`.
+The outputs of a cell are represented as Immutable Lists to accommodate. So we'll need to install `immutable`.
 
 ```
 npm install immutable
@@ -145,7 +145,7 @@ Map {
 }
 ```
 
-Sweet! You can repeat this process for for as many code cells as you like! In addition to code cells, you can also create Markdown cells using `commutable.emptyMarkdownCell`. Happy hacking!
+Sweet! You can repeat this process for as many code cells as you like! In addition to code cells, you can also create Markdown cells using `commutable.emptyMarkdownCell`. Happy hacking!
 
 ## Major :key:s
 
