@@ -110,12 +110,12 @@ which means it will only be installed with development installs
 npm install electron-compilers@^2.0.4 --save-dev
 ```
 
-Electron compile will automatically
+`electron-compile` will automatically
 [transpile](https://www.google.com/webhp?sourceid=chrome-instant&ion=1&espv=2&ie=UTF-8#q=define%3A%20transpile)
 the ES6 Javascript we use into
 ES5 Javascript.
 
-Electron-compile only gets us a part of the way there.  It's the mechanism
+`electron-compile` only gets us a part of the way there.  It's the mechanism
 that triggers the transpilation, but it's not actually smart enought to do the
 translation itself.  Instead it relies on other packages, like Babel, to do that.
 We will use [Babel](https://babeljs.io/) to perform the translation.  Babel is
@@ -146,7 +146,7 @@ Edit the babelrc (`atom .babelrc`) so it looks like this
 }
 ```
 
-This babelrc file tells babel to translate
+This `.babelrc` file tells Babel to translate
 [es2015](https://babeljs.io/docs/plugins/preset-es2015/)
 and [react](https://babeljs.io/docs/plugins/preset-react/)
 code into es5 code.  es2015 is ES6, ratified into Javascript in 2015.  To learn
@@ -156,7 +156,7 @@ about it [here](http://babeljs.io/docs/plugins/transform-object-rest-spread/).
 The class properties plugin is a stage 1 (proposal) spec of Javascript, read
 more about it [here](http://babeljs.io/docs/plugins/transform-class-properties/).
 
-A typical electron application has two or more processes at any given time.
+A typical Electron application has two or more processes at any given time.
 One of these processes is the "main" process, which is responsible for spawning
 windows.  The other processes are "renderer" processes, which are responsible
 for rendering content inside each window.  There is one renderer process per
@@ -550,15 +550,308 @@ const store = createStore(reducers);
 
 ### Load a notebook (commutable)
 
-Create a reducer to set the notebook state.
-Install commutable
-Allow notebooks to be opened via argv
-Load the json and pass it to the dispatch via an action
+Now that we have created a simple state store, let's start with the most important of notebook front-end functions — the ability to open a notebook.
+
+Let's start by adding a menu to our application. Navigate to the main application file located at `src/main/index.js` and add the following import.
+
+```
+import { Menu } from 'electron';
+```
+
+`Menu` is an Electron object that renders a map data structure with specifications about the menu into a menu element. Let's create a new file where we will store our menu.
+
+Inside `app.on('ready')`, we are going to use the `setApplicationMenu` function provided by `Menu`.
+
+```
+app.on('ready', () => {
+	Menu.setApplicationMenu(defaultMenu);
+	
+	....
+});
+```
+
+Where does `defaultMenu` come from? We'll be building it! Let's start by creating a file to store our menu.
+
+```
+touch src/main/menu.js
+```
+
+Inside this file, we'll export a data structure that represents the file menu.
+
+```
+import { Menu } from 'electron';
+
+export const named = {
+	label: 'mynotebook',
+	submenu: [{
+      label: `About ${name}`,
+      role: 'about',
+    }],
+};
+
+export const file = {
+  label: '&File',
+  submenu: [
+    {
+      label: '&Open',
+      accelerator: 'CmdOrCtrl+O',
+    }
+  ]
+};
+
+export function generateDefaultTemplate() {
+	const template = [];
+	
+	if (process.platform === 'darwin') {
+		template.push(named);
+	}
+	
+	template.push(file);
+	
+	return template;
+}
+
+export const defaultMenu = Menu.buildFromTemplate(generateDefaultTemplate());
+```
+
+This creates a "File" menu with an "Open" subitem that can be tirgged by the Cmd + O or Ctrl + O keyboard shortcuts. All that funny business about `process.platform === 'darwin'` is designed to accomodate the menu structure in macOS which includes the application name.
+
+Now, we'll need to instantiate this menu when we launch our application, so edit `src/main/index.js` to import the `defaultMenu` that we just created.
+
+```
+import { defaultMenu } from './menu';
+
+```
+
+Now, run `npm run start` and you should see a blank application window with a `File` menu item.
+
+Now let's go ahead and install commutable. This nteract library will allow us to execute some basic operations on notebooks, such as appending cells and updating outputs. To learn more about `commutable`, you can read [its documentation](../commutable/index.md).
+
+At this point, we are going to take a step back and outline what it means to "open" a notebook. The steps look something like this.
+
+1. User selects the notebook they would like to open in an Open window.
+2. The JSON of the file the user selects is loaded.
+3. The JSON from Step 2 is loaded into a notebook file.
+
+Alright! Let's tackle Step 1. We'll need to load a file selector when the user selects File > Open. To do this, we are going to edit `src/main/menu/js` and attach a handler to the `click` event on the `File > Open` window.
+
+```
+import { Menu, dialog } from 'electron';
+
+...
+
+export const file = {
+	label: '&File',
+	submenu: [{
+    	open: '&Open',
+    	accelerator: 'CmdOrCtrl+O',
+    	click: () => {
+    		const opts = {
+    			title: 'Open a notebook',
+    			filters: [
+    				{ name: 'Notebooks', extensions: ['ipynb'] },
+    			],
+    			properties: [
+    				'openFile',
+    			],
+    			defaultPath: process.cwd(),
+    		};
+    		dialog.showOpenDialog(opts, (fname) => {
+    			if (fname) {
+    				// How do we open the file?
+    			}
+    		});
+    	},
+    }] 
+};
+```
+
+Let's break down the code that we have added here. We are taking advantage of one of Electron's awesome utilities, the `dialog` module. The dialog module exposes an `showOpenDialog` function that takes care of showing the user an open dialog and limiting the types of files that they can open. In this particular case, we are limiting the user to opening only `.ipynb` files.
+
+If we run our application again, you should be able to click `File > Open` and select a notebook from the `Open Dialog`.
+
+Once the user has selected a file, what do we do? We move on to Steps 2 and 3 of the list above. We will need a way to load the JSON from a file. To do this, let's create a new file
+
+```
+touch src/main/launch.js
+```
+
+And inside this file, we'll create a `launchFilename` function that loads a notebook from a file. Let's start by checking if a `filename` was passed and if not, we'll log a warning to
+the console.
+
+```
+export function launchFilename(filename) {
+	if (!filename) {
+		console.warn('No filename passed!');
+	}
+}
+```
+
+If we do have a `filename` provided, we will need to read from the file. We'll be loading the file asychronously, so we will need to use a `Promise`.
+
+```
+return new Promise((resolve, reject) => {
+	fs.readFile(filename, {}, (err, data) => {
+		if (err) {
+			reject(err);
+		}
+		resolve();
+	});
+});
+```
+
+Make sure that you add an import for the Node filesystem package at the top.
+
+```
+import fs from 'fs';
+```
+
+Now, what should go inside the `resolve` statement if the data is successfully read from the file? Well, for starters, we will need to parse the JSON.
+
+```
+resolve(JSON.parse(data));
+```
+
+Next, we'll need to conver this JSON into the notebook format. `commutable` comes with a `fromJS` function that converts a JSON object to a notebook model. Let's import the function from `commutable` and updated our `resolve` statement.
+
+```
+import { fromJS } from 'commutable';
+
+...
+
+resolve(fromJS(JSON.parse(data)));
+```
+
+Now, let's hop on back to our `src/main/menu.js` file and make sure that when a user successfully selects a file from the open dialog, the `launchFilename` function is called. We will do this by adding an import to our `launchFilename` function at the top of `src/main/menu.js`
+
+```
+import { launchFilename } from './launch';
+```
+
+and launch the file inside our if-statement.
+
+```
+...
+
+if (fname) {
+  launchFilename(fname[0]);
+}
+
+...
+```
+
+Since the open dialog allows a user to select and load multiple files, the `fname` variable holds a list. However, we are limiting the user to only one file and therefore need to select the first, or 0th index, in the list using the `[0]` accessor.
+
+Now that we have created a way to load a notebook, we will need to figure out a way to render notebooks.
+
+We will need to create a `launch` function that takes a Notebook object and a filename and opens a new Electron window with the document loaded. We will add this function to our `src/main/launch.js`.
+
+```
+import path from 'path';
+import { shell, BrowserWindow } from 'electron';
+
+
+export function launch(notebook, filename) {
+	let win = new BrowserWindow({
+		width: 800,
+		height: 1000,
+		title: filename,
+	});
+	
+	const index = path.join(__dirname, '..', 'renderer', 'index.html');
+	win.loadURL(`file://${index}`);
+	
+	win.webContents.on('did-finish-load', () => {
+		win.webContents.send('main:load', { notebook: notebook.toJS(), filename });
+	});
+	
+	win.on('closed', () => {
+		win = null;
+	});
+	
+	return win;
+}
+```
+
+So, first we create a new `BrowserWindow` and then load the content of our `index.html` file into the `BrowserWindow`.  The next couple of lines utilize [interprocess communication](https://en.wikipedia.org/wiki/Inter-process_communication), or IPC, to send messages between the main process which is responsible for opening web pages and the renderer process which is responsible for the content on each individual webpage. You can read more about the distinction between the main and renderer process on [Electron's official documentation](https://github.com/electron/electron/blob/master/docs/tutorial/quick-start.md).
+
+In this particular case, we wait to recieve a `did-finish-load` and then send a `main:load` function with a payload of the notebook JSON and filename. This `main:load` function will be recieved by our renderer and used to load the actual content.
+
+
+When we recieve the `closed` signal, we sent the value of `win` to `null` which effectively removes the window from the screen.
+
+If we run `npm run start` again, we can use File > Open to select a Notebook file and see that a new window is loaded with a title bar that contains the name of the file.
+
+What's next? We've loaded the JSON from a file selected by user into a notebook model. We'll need to load a representation of this notebook into the window. Read on, intrepid coder!
+
 
 ### Design notebook components (react, react-transformime)
 
-Install react
-Create a root react node
+React comes to save the day! React is a JavaScript library for building user interfaces. Let's start off by installing React.
+
+```
+npm install react --save
+```
+
+To get started with React, we'll need to create a DOM element on our webpage where we will load our React components, by adding the following content to `src/renderer/index.html`.
+
+```
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+	</head>
+	<body>
+		<div id="app">
+		</div>
+	</body>
+</html>
+```
+
+The `#div` element is where all our React components will be loaded.
+
+Let's create a Notebook component, a user interface entity that is responsible for rendering the state of the notebook and responding to actions, such as clicks, the user takes in the application. Let's create a new directory, where we will store our components,
+
+```
+mkdir -p src/renderer/components
+```
+
+and add a file for our notebook component.
+
+```
+touch src/renderer/components/notebook.js
+```
+
+And add the following content.
+
+```
+import React from 'react';
+
+class Notebook extends React.Component {
+	static propTypes = {
+		notebook: React.PropTypes.any,
+	};
+	
+	render () {
+		if (!this.props.notebook) {
+			return (<div>
+				<h1>No notebook loaded!</h1>
+			</div>);
+		}
+	}
+}
+
+export default Notebook;
+```
+
+Now that we have our component, we will need to render it inside the `#div` element that we created. To do this, we will need to use the `react-dom` package which will allow us to render a component at a DOM-endpoint.
+
+
+```
+npm install react-dom --save
+```
+
+
 Create a notebook node
 Attach the store to the notebook node
 Render some test content
